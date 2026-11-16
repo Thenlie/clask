@@ -59,6 +59,7 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		newSetCmd(),
 		newEditCmd(),
 		newCheckCmd(),
+		newServeCmd(),
 		newInitCmd(),
 		newRegisterCmd(),
 		newUnregisterCmd(),
@@ -70,7 +71,7 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 	)
 	for _, c := range root.Commands() {
 		switch c.Name() {
-		case "list", "show", "next", "add", "start", "block", "done", "drop", "reopen", "set", "edit", "check":
+		case "list", "show", "next", "add", "start", "block", "done", "drop", "reopen", "set", "edit", "check", "serve":
 			c.GroupID = "tasks"
 		case "init", "register", "unregister", "discover", "scan", "projects", "prune":
 			c.GroupID = "registry"
