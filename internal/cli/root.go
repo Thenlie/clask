@@ -45,9 +45,13 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		newListCmd(),
 		newShowCmd(),
 		newNextCmd(),
+		newInitCmd(),
 		newRegisterCmd(),
 		newUnregisterCmd(),
+		newDiscoverCmd(),
+		newScanCmd(),
 		newProjectsCmd(),
+		newPruneCmd(),
 		newVersionCmd(),
 	)
 	return root
