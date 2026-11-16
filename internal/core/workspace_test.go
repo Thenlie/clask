@@ -196,6 +196,13 @@ func TestGet(t *testing.T) {
 	if err != nil || e.ID != "app-task" {
 		t.Fatalf("project-scoped: %v %v", e, err)
 	}
+	e, err = ws.Get("mono:mono/root")
+	if err != nil || e.ID != "root-task" {
+		t.Fatalf("explicit root scope: %v %v", e, err)
+	}
+	if _, err := ws.Get("mono:mono/app-task"); err == nil {
+		t.Fatal("root scope must not match a scoped file's task")
+	}
 	if _, err := ws.Get("alpha/app-task"); err == nil {
 		t.Fatal("wrong project must not match")
 	}

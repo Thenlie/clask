@@ -188,9 +188,10 @@ func (ws *Workspace) Get(ref string) (Entry, error) {
 	if idPart == "" {
 		return Entry{}, fmt.Errorf("reference %q has no task id", ref)
 	}
+	selProj, selScope, hasScope := strings.Cut(sel, ":")
 	var exact, prefix []Entry
 	for _, e := range ws.Entries() {
-		if scoped && e.Selector() != sel && e.Project != sel {
+		if scoped && (e.Project != selProj || (hasScope && e.Scope != selScope)) {
 			continue
 		}
 		switch {
