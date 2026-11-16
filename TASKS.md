@@ -18,9 +18,10 @@ HTTP API in internal/server over core.Workspace; frontend in web/ built into int
 id: astro-starlight-docs-site
 title: Astro Starlight docs site
 priority: 3
-status: todo
+status: done
 tags: [docs]
 created: 2026-11-16
+completed: 2026-11-16
 ---
 docs/ with the format spec; generate the CLI reference with cobra doc.GenMarkdownTree via make docs.
 
