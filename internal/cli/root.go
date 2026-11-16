@@ -42,6 +42,10 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 	pf.BoolVar(&flags.noColor, "no-color", false, "disable colored output")
 	pf.StringVar(&flags.configPath, "config", "", "path to config file (default $XDG_CONFIG_HOME/clask/config.yaml)")
 
+	root.AddGroup(
+		&cobra.Group{ID: "tasks", Title: "Task commands:"},
+		&cobra.Group{ID: "registry", Title: "Registry commands:"},
+	)
 	root.AddCommand(
 		newListCmd(),
 		newShowCmd(),
@@ -54,6 +58,7 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		newStatusCmd("reopen", "Reopen tasks (status todo, clears completed)", taskfile.StatusTodo),
 		newSetCmd(),
 		newEditCmd(),
+		newCheckCmd(),
 		newInitCmd(),
 		newRegisterCmd(),
 		newUnregisterCmd(),
@@ -63,6 +68,15 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		newPruneCmd(),
 		newVersionCmd(),
 	)
+	for _, c := range root.Commands() {
+		switch c.Name() {
+		case "list", "show", "next", "add", "start", "block", "done", "drop", "reopen", "set", "edit", "check":
+			c.GroupID = "tasks"
+		case "init", "register", "unregister", "discover", "scan", "projects", "prune":
+			c.GroupID = "registry"
+		}
+	}
+	root.SetHelpCommandGroupID("")
 	return root
 }
 
@@ -86,7 +100,9 @@ func Execute() int {
 		}
 	})
 	if err := root.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "clask:", err)
+		if _, ok := err.(errCheckFailed); !ok {
+			fmt.Fprintln(os.Stderr, "clask:", err)
+		}
 		return 1
 	}
 	return 0
