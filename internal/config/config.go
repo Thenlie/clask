@@ -6,6 +6,7 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -169,10 +170,16 @@ func (c *Config) Save(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
-	data, err := yaml.Marshal(c)
-	if err != nil {
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(c); err != nil {
 		return fmt.Errorf("encode config: %w", err)
 	}
+	if err := enc.Close(); err != nil {
+		return fmt.Errorf("encode config: %w", err)
+	}
+	data := buf.Bytes()
 	tmp, err := os.CreateTemp(filepath.Dir(path), ".config-*.yaml")
 	if err != nil {
 		return fmt.Errorf("create temp config: %w", err)

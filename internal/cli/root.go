@@ -37,7 +37,12 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 	pf.BoolVar(&flags.noColor, "no-color", false, "disable colored output")
 	pf.StringVar(&flags.configPath, "config", "", "path to config file (default $XDG_CONFIG_HOME/clask/config.yaml)")
 
-	root.AddCommand(newVersionCmd())
+	root.AddCommand(
+		newRegisterCmd(),
+		newUnregisterCmd(),
+		newProjectsCmd(),
+		newVersionCmd(),
+	)
 	return root
 }
 
