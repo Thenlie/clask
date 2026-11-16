@@ -45,7 +45,8 @@ created: 2026-11-16
 id: put-clask-on-path-outside-the-repo
 title: Put clask on PATH outside the repo
 priority: 2
-status: todo
+status: done
 created: 2026-11-16
+completed: 2026-11-16
 ---
 go install lands in mise's Go bin. Options: mise use -g go, or GOBIN=~/.local/bin in mise.toml [env].

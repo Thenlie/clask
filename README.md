@@ -25,9 +25,9 @@ falcon       upgrade-cbl    2  todo                     Upgrade Couchbase Lite
 Requires Go 1.23+.
 
 ```bash
-go install github.com/Thenlie/clask/cmd/clask@latest   # into $(go env GOPATH)/bin
+go install github.com/Thenlie/clask/cmd/clask@latest   # into $GOBIN or $(go env GOPATH)/bin
 # or from a checkout:
-make install
+make install        # mise.toml sets GOBIN=~/.local/bin
 ```
 
 Shell completion: `clask completion zsh --help` (also bash, fish, powershell).
