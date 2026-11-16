@@ -7,9 +7,10 @@ Format: https://github.com/Thenlie/clask#format
 id: local-web-ui-clask-serve-with-embedded
 title: 'Local web UI: clask serve with embedded frontend'
 priority: 3
-status: in-progress
+status: done
 tags: [web]
 created: 2026-11-16
+completed: 2026-11-16
 ---
 HTTP API in internal/server over core.Workspace; frontend in web/ built into internal/server/dist and shipped via go:embed.
 
@@ -56,7 +57,7 @@ id: live-refresh-for-the-web-ui
 title: Live refresh for the web UI
 priority: 3
 status: todo
-tags: [web]
+tags: [web, refresh]
 created: 2026-11-16
 ---
 Page currently needs a manual reload to see CLI/editor changes. Options:
