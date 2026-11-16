@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/Thenlie/clask/internal/config"
 	"github.com/Thenlie/clask/internal/core"
@@ -368,12 +369,28 @@ func TestGuard(t *testing.T) {
 }
 
 func TestStaticFallback(t *testing.T) {
-	e := newEnv(t)
-	for _, path := range []string{"/", "/some/route"} {
-		r, data := e.do(http.MethodGet, path, nil)
-		wantStatus(t, r, data, 200)
-		if !strings.Contains(string(data), "UI not built") {
-			t.Errorf("%s: %s", path, data)
+	get := func(h http.Handler, path string) (int, string) {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
+		return rec.Code, rec.Body.String()
+	}
+	unbuilt := staticHandler(fstest.MapFS{".gitkeep": {}})
+	for _, path := range []string{"/", "/some/route", "/index.html"} {
+		if code, body := get(unbuilt, path); code != 200 || !strings.Contains(body, "UI not built") {
+			t.Errorf("unbuilt %s: %d %s", path, code, body)
+		}
+	}
+	built := staticHandler(fstest.MapFS{
+		"index.html":    {Data: []byte("<div id=root>")},
+		"assets/app.js": {Data: []byte("console.log(1)")},
+	})
+	for path, want := range map[string]string{
+		"/":              "<div id=root>",
+		"/some/route":    "<div id=root>",
+		"/assets/app.js": "console.log(1)",
+	} {
+		if code, body := get(built, path); code != 200 || body != want {
+			t.Errorf("built %s: %d %q", path, code, body)
 		}
 	}
 }

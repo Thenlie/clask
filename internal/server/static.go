@@ -33,6 +33,12 @@ func Static() http.Handler {
 	if err != nil {
 		panic(err)
 	}
+	return staticHandler(sub)
+}
+
+// staticHandler serves sub, falling back to index.html for app routes or
+// to a hint page when the frontend was never built.
+func staticHandler(sub fs.FS) http.Handler {
 	files := http.FileServerFS(sub)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		name := strings.TrimPrefix(path.Clean(r.URL.Path), "/")
