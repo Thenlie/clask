@@ -1,5 +1,7 @@
 [tools]
 go = "latest"
+node = "22"
+pnpm = "11"
 
 [env]
 # `make install` / `go install` land here; ~/.local/bin is on PATH.

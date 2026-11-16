@@ -1,6 +1,7 @@
 /bin/
 /dist/
-/internal/server/dist/
+/internal/server/dist/*
+!/internal/server/dist/.gitkeep
 node_modules/
 .DS_Store
 *.test
