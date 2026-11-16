@@ -2,6 +2,8 @@ package taskfile
 
 import (
 	"os"
+
+	"gopkg.in/yaml.v3"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -98,12 +100,12 @@ func TestParseProblems(t *testing.T) {
 		t.Fatalf("expected only 'good' to survive, got %+v", f.Tasks)
 	}
 	want := []string{
-		"must match",      // Bad_ID
-		"id is required",  // missing id
-		"field color not", // unknown key
-		"duplicate id",    // good again
-		"invalid date",    // tomorrow
-		"invalid status",  // doing
+		"must match",                    // Bad_ID
+		"id is required",                // missing id
+		"field color is not a task key", // unknown key
+		"duplicate id",                  // good again
+		"invalid date",                  // tomorrow
+		"invalid status",                // doing
 	}
 	if len(f.Problems) != len(want) {
 		for _, p := range f.Problems {
@@ -115,6 +117,17 @@ func TestParseProblems(t *testing.T) {
 		if !strings.Contains(f.Problems[i].Error(), w) {
 			t.Errorf("problem %d = %q, want substring %q", i, f.Problems[i].Error(), w)
 		}
+		if strings.Contains(f.Problems[i].Error(), hrHint) {
+			t.Errorf("problem %d should not carry the hr hint: %q", i, f.Problems[i].Error())
+		}
+	}
+	// unknown key is on the 3rd line of the block that opens at line 17
+	if f.Problems[2].Line != 20 {
+		t.Errorf("unknown key reported at line %d, want 20", f.Problems[2].Line)
+	}
+	// bad date on line 3 of the block opening at line 28
+	if f.Problems[4].Line != 31 {
+		t.Errorf("bad date reported at line %d, want 31", f.Problems[4].Line)
 	}
 }
 
@@ -170,5 +183,24 @@ func TestOverdue(t *testing.T) {
 	tk.Due = &today
 	if tk.Overdue(today) {
 		t.Fatal("due today is not overdue")
+	}
+}
+
+func TestDateYAMLRoundTrip(t *testing.T) {
+	d, _ := ParseDate("2026-01-02")
+	out, err := yaml.Marshal(struct {
+		Due *Date `yaml:"due"`
+	}{&d})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(out) != "due: 2026-01-02\n" {
+		t.Fatalf("marshal = %q", out)
+	}
+	var back struct {
+		Due *Date `yaml:"due"`
+	}
+	if err := yaml.Unmarshal(out, &back); err != nil || back.Due.String() != "2026-01-02" {
+		t.Fatalf("unmarshal = %v %v", back.Due, err)
 	}
 }

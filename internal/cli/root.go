@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"github.com/Thenlie/clask/internal/render"
 )
 
 // version is set at build time via -ldflags.
@@ -27,9 +29,11 @@ func newRootCmd() *cobra.Command {
 machine into one view. Tasks live in the repo next to the code they describe.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return cmd.Help()
-		},
+	}
+	// Bare "clask" behaves like "clask list" with default flags.
+	defaultList := &listFlags{sortKey: "priority"}
+	root.RunE = func(cmd *cobra.Command, args []string) error {
+		return runList(cmd, defaultList, 0)
 	}
 
 	pf := root.PersistentFlags()
@@ -38,6 +42,9 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 	pf.StringVar(&flags.configPath, "config", "", "path to config file (default $XDG_CONFIG_HOME/clask/config.yaml)")
 
 	root.AddCommand(
+		newListCmd(),
+		newShowCmd(),
+		newNextCmd(),
 		newRegisterCmd(),
 		newUnregisterCmd(),
 		newProjectsCmd(),
@@ -59,7 +66,13 @@ func newVersionCmd() *cobra.Command {
 
 // Execute runs the root command and returns a process exit code.
 func Execute() int {
-	if err := newRootCmd().Execute(); err != nil {
+	root := newRootCmd()
+	cobra.OnInitialize(func() {
+		if flags.noColor {
+			render.DisableColor()
+		}
+	})
+	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "clask:", err)
 		return 1
 	}

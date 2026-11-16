@@ -147,3 +147,28 @@ func TestResolveScope(t *testing.T) {
 		t.Fatal("expected error for unknown scope")
 	}
 }
+
+func TestContext(t *testing.T) {
+	root := t.TempDir()
+	cfg := config.Default()
+	cfg.Projects = []config.Project{
+		{Name: "mono", Path: root, Files: []config.File{{Path: "TASKS.md"}, {Path: "packages/app/TASKS.md"}}},
+		{Name: "other", Path: filepath.Join(root, "..", "elsewhere")},
+	}
+	p, f, ok := Context(cfg, filepath.Join(root, "packages", "app", "src"))
+	if !ok || p.Name != "mono" || f == nil || f.Path != "packages/app/TASKS.md" {
+		t.Fatalf("nested context = %v %v %v", p, f, ok)
+	}
+	p, f, ok = Context(cfg, filepath.Join(root, "packages", "other"))
+	if !ok || p.Name != "mono" || f == nil || f.Path != "TASKS.md" {
+		t.Fatalf("root-file fallback = %v %v %v", p, f, ok)
+	}
+	if _, _, ok := Context(cfg, filepath.Dir(root)); ok {
+		t.Fatal("parent dir must not match")
+	}
+	cfg.Projects[0].Files = nil
+	p, f, ok = Context(cfg, root)
+	if !ok || f != nil {
+		t.Fatalf("project without files: %v %v %v", p, f, ok)
+	}
+}

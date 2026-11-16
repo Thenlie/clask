@@ -169,3 +169,56 @@ func ResolveScope(cfg *config.Config, ref string) (p *config.Project, file *conf
 	}
 	return nil, nil, fmt.Errorf("scope %q in project %q: %w", scope, projName, ErrNotFound)
 }
+
+// Context locates the project and the nearest registered file for a
+// working directory. file is nil when cwd is inside a project but under no
+// registered file's directory. ok is false when cwd is in no project.
+func Context(cfg *config.Config, cwd string) (p *config.Project, file *config.File, ok bool) {
+	cwd = filepath.Clean(cwd)
+	best := -1
+	for i := range cfg.Projects {
+		root, err := cfg.Projects[i].AbsPath()
+		if err != nil || !isWithin(cwd, root) {
+			continue
+		}
+		if best < 0 || len(root) > len(mustAbs(cfg.Projects[best])) {
+			best = i
+		}
+	}
+	if best < 0 {
+		return nil, nil, false
+	}
+	p = &cfg.Projects[best]
+	root := mustAbs(*p)
+	bestLen := -1
+	for i := range p.Files {
+		dir := filepath.Join(root, filepath.Dir(p.Files[i].Path))
+		if isWithin(cwd, dir) && len(dir) > bestLen {
+			bestLen = len(dir)
+			file = &p.Files[i]
+		}
+	}
+	return p, file, true
+}
+
+// RemoveFile drops the file with the given relative path from a project.
+func RemoveFile(p *config.Project, rel string) bool {
+	rel = filepath.Clean(rel)
+	for i, f := range p.Files {
+		if filepath.Clean(f.Path) == rel {
+			p.Files = append(p.Files[:i], p.Files[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func mustAbs(p config.Project) string {
+	abs, _ := p.AbsPath()
+	return abs
+}
+
+// isWithin reports whether path equals dir or is nested under it.
+func isWithin(path, dir string) bool {
+	return path == dir || strings.HasPrefix(path, dir+string(filepath.Separator))
+}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/Thenlie/clask/internal/core"
 	"github.com/Thenlie/clask/internal/registry"
 	"github.com/Thenlie/clask/internal/render"
 )
@@ -28,6 +29,17 @@ func newProjectsCmd() *cobra.Command {
 			cfg, _, err := loadConfig()
 			if err != nil {
 				return err
+			}
+			// Effective scopes may come from each file's own name, so load them.
+			scopes := map[string]string{}
+			if showFiles {
+				ws, err := core.Load(cfg)
+				if err != nil {
+					return err
+				}
+				for _, lf := range ws.Files {
+					scopes[lf.Path] = lf.Scope
+				}
 			}
 			var rows []projectRow
 			for _, p := range cfg.Projects {
@@ -52,10 +64,15 @@ func newProjectsCmd() *cobra.Command {
 				}
 				for _, f := range p.Files {
 					fw := append([]string(nil), warn...)
-					if fp, err := p.FileAbsPath(f); err == nil && !fileExists(fp) {
-						fw = append(fw, "file missing")
+					scope := registry.Scope(p, f)
+					if fp, err := p.FileAbsPath(f); err == nil {
+						if !fileExists(fp) {
+							fw = append(fw, "file missing")
+						} else if s, ok := scopes[fp]; ok {
+							scope = s
+						}
 					}
-					rows = append(rows, projectRow{Project: p.Name, Scope: registry.Scope(p, f), Path: f.Path, Warnings: fw})
+					rows = append(rows, projectRow{Project: p.Name, Scope: scope, Path: f.Path, Warnings: fw})
 				}
 			}
 			out := cmd.OutOrStdout()

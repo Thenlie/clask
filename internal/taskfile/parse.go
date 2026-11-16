@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -52,7 +54,8 @@ func Parse(data []byte, opts Options) (*File, error) {
 	f := &File{Data: data, MetaSpan: spans[0]}
 
 	if err := decodeStrict(data[spans[0].YAMLStart:spans[0].YAMLEnd], &f.Meta); err != nil {
-		return nil, fmt.Errorf("file block (line %d): %w", spans[0].Line, err)
+		line, err := absoluteLine(spans[0].Line, err)
+		return nil, fmt.Errorf("file block (line %d): %w", line, err)
 	}
 	if f.Meta.DefaultPriority != 0 && (f.Meta.DefaultPriority < 1 || f.Meta.DefaultPriority > 5) {
 		return nil, fmt.Errorf("file block (line %d): default_priority must be 1-5", spans[0].Line)
@@ -68,8 +71,13 @@ func Parse(data []byte, opts Options) (*File, error) {
 	seen := map[string]int{}
 	for _, sp := range spans[1:] {
 		t := &Task{Span: sp}
-		if err := decodeStrict(data[sp.YAMLStart:sp.YAMLEnd], t); err != nil {
-			f.Problems = append(f.Problems, Problem{Line: sp.Line, Err: fmt.Errorf("%w (%s)", err, hrHint)})
+		yamlText := data[sp.YAMLStart:sp.YAMLEnd]
+		if err := decodeStrict(yamlText, t); err != nil {
+			line, err := absoluteLine(sp.Line, err)
+			if !looksLikeMapping(yamlText) {
+				err = fmt.Errorf("%w (%s)", err, hrHint)
+			}
+			f.Problems = append(f.Problems, Problem{Line: line, Err: err})
 			continue
 		}
 		if t.Priority == 0 {
@@ -114,12 +122,37 @@ func decodeStrict(b []byte, v any) error {
 	return nil
 }
 
-// cleanYAMLError strips yaml.v3's "yaml: " prefix for friendlier messages.
+// cleanYAMLError rewrites yaml.v3 messages for users: drops the "yaml: "
+// prefix and replaces Go type names with the schema they map to.
 func cleanYAMLError(err error) error {
 	msg := strings.TrimPrefix(err.Error(), "yaml: ")
 	msg = strings.TrimPrefix(msg, "unmarshal errors:\n  ")
+	msg = strings.ReplaceAll(msg, " not found in type taskfile.Task", " is not a task key")
+	msg = strings.ReplaceAll(msg, " not found in type taskfile.FileMeta", " is not a file key")
+	msg = strings.ReplaceAll(msg, "into taskfile.Task", "into a task")
+	msg = strings.ReplaceAll(msg, "into taskfile.FileMeta", "into file metadata")
 	return errors.New(msg)
 }
+
+var yamlLineRe = regexp.MustCompile(`^line (\d+): `)
+
+// absoluteLine converts a block-relative "line N: ..." YAML error into the
+// file line and strips the prefix. Errors without a line keep blockLine.
+func absoluteLine(blockLine int, err error) (int, error) {
+	msg := err.Error()
+	m := yamlLineRe.FindStringSubmatch(msg)
+	if m == nil {
+		return blockLine, err
+	}
+	rel, _ := strconv.Atoi(m[1])
+	return blockLine + rel, errors.New(strings.TrimPrefix(msg, m[0]))
+}
+
+var keyLineRe = regexp.MustCompile(`(?m)^[a-z_]+:`)
+
+// looksLikeMapping reports whether the YAML text has at least one key line.
+// Prose captured by a stray --- in a body does not.
+func looksLikeMapping(b []byte) bool { return keyLineRe.Match(b) }
 
 func trimBody(b []byte) string {
 	return strings.Trim(string(b), "\r\n")

@@ -97,8 +97,11 @@ func (d *Date) UnmarshalYAML(n *yaml.Node) error {
 	return nil
 }
 
-// MarshalYAML implements yaml.Marshaler.
-func (d Date) MarshalYAML() (any, error) { return d.String(), nil }
+// MarshalYAML implements yaml.Marshaler. Tagging the scalar as a timestamp
+// keeps the encoder from quoting it.
+func (d Date) MarshalYAML() (any, error) {
+	return &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!timestamp", Value: d.String()}, nil
+}
 
 // MarshalJSON implements json.Marshaler.
 func (d Date) MarshalJSON() ([]byte, error) { return json.Marshal(d.String()) }

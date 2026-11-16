@@ -257,3 +257,11 @@ func CollapseHome(p string) string {
 	}
 	return p
 }
+
+// DefaultPriority returns the configured fallback priority.
+func (c *Config) DefaultPriority() int {
+	if c.Defaults.Priority == 0 {
+		return 3
+	}
+	return c.Defaults.Priority
+}
