@@ -1,0 +1,64 @@
+---
+title: clask
+description: Cross-repo task lists from TASKS.md files.
+template: splash
+hero:
+  tagline: Each repo keeps a TASKS.md next to its code. One command shows every open task on your machine.
+  actions:
+    - text: Quick start
+      link: /clask/start/quick-start/
+      icon: right-arrow
+    - text: Task file format
+      link: /clask/format/overview/
+      variant: minimal
+---
+
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components'
+
+```
+$ clask
+PROJECT      ID             P  STATUS       DUE         TITLE
+falcon:app   fix-sync-race  1  in-progress  2026-12-01  Fix sync race on event switch
+clask        docs-site      2  todo                     Astro docs site
+falcon       upgrade-cbl    2  todo                     Upgrade Couchbase Lite
+```
+
+<CardGrid>
+  <Card title="Tasks live in your repo" icon="document">
+    A plain `TASKS.md` versioned with the code it describes. Edits touch
+    only the task you changed, so diffs stay small.
+  </Card>
+  <Card title="One view across repos" icon="list-format">
+    Register projects once. `clask` lists, filters and sorts tasks from all
+    of them, including monorepos with a task file per package.
+  </Card>
+  <Card title="Terminal first, browser too" icon="laptop">
+    Tables, `--json`, TSV and markdown for piping. `clask serve` opens a
+    local web UI over the same files.
+  </Card>
+  <Card title="Nothing scanned behind your back" icon="approve-check">
+    clask only reads files you registered. `scan` and `discover` walk
+    directories you name, to a bounded depth.
+  </Card>
+</CardGrid>
+
+## Install
+
+<Tabs>
+  <TabItem label="From a checkout (with web UI)">
+    ```bash
+    git clone https://github.com/Thenlie/clask && cd clask
+    mise install          # Go, node, pnpm
+    make web install      # builds the UI, installs clask into ~/.local/bin
+    ```
+  </TabItem>
+  <TabItem label="go install (CLI only)">
+    ```bash
+    go install github.com/Thenlie/clask/cmd/clask@latest
+    ```
+    `clask serve` shows a hint page in this build, because the web UI is
+    compiled in only by `make web`.
+  </TabItem>
+</Tabs>
+
+See [Install](/clask/start/install/) for shell completion and details.

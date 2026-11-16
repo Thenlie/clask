@@ -3,7 +3,7 @@ BIN  := bin/clask
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -ldflags "-s -w -X github.com/Thenlie/clask/internal/cli.version=$(VERSION)"
 
-.PHONY: build build-go test vet fmt install clean web web-check web-dev
+.PHONY: build build-go test vet fmt install clean web web-check web-dev docs docs-dev docs-gen
 
 # Full binary: compiles the web UI, then embeds it.
 build: web build-go
@@ -36,5 +36,17 @@ web-check:
 web-dev:
 	pnpm --dir web dev
 
+# Docs site (Astro Starlight). Output: docs/dist.
+docs:
+	pnpm --dir docs install --frozen-lockfile
+	pnpm --dir docs build
+
+docs-dev:
+	pnpm --dir docs dev
+
+# Regenerate only the CLI reference pages.
+docs-gen:
+	go run ./cmd/gendocs
+
 clean:
-	rm -rf bin dist internal/server/dist/assets internal/server/dist/index.html internal/server/dist/favicon.svg
+	rm -rf bin dist docs/dist internal/server/dist/assets internal/server/dist/index.html internal/server/dist/favicon.svg

@@ -1,0 +1,19 @@
+{
+  "name": "clask-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "gen": "go run ../cmd/gendocs -out src/content/docs/reference/cli",
+    "dev": "pnpm gen && astro dev",
+    "build": "pnpm gen && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.43.1",
+    "astro": "^7.3.6",
+    "sharp": "^0.35.3",
+    "starlight-links-validator": "^0.27.0"
+  },
+  "private": true
+}
