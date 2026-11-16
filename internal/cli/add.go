@@ -40,6 +40,9 @@ func newAddCmd() *cobra.Command {
 		Long: `Append a task to a task file. The target is --project (project or
 project:scope) or, by default, the nearest task file above the current
 directory. The id is derived from the title.`,
+		Example: `  clask add "Fix sync race" --priority 1 -t sync --due 2026-12-01
+  clask add "Flaky login test" -p falcon:automation --body "Fails on CI only"
+  clask add "Write release notes" --edit`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			sel := project
@@ -105,7 +108,10 @@ func newStatusCmd(use, short string, status taskfile.Status) *cobra.Command {
 	return &cobra.Command{
 		Use:   use + " <ref>...",
 		Short: short,
-		Args:  cobra.MinimumNArgs(1),
+		Long: short + `. Takes one or more task refs. done and drop stamp the
+completed date with today; reopen and the other verbs clear it.`,
+		Example: fmt.Sprintf("  clask %[1]s fix-sync\n  clask %[1]s falcon/fix-sync falcon:app/flaky-login", use),
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ws, err := loadWorkspace(nil)
 			if err != nil {
@@ -138,11 +144,12 @@ func newSetCmd() *cobra.Command {
 
 Keys: title, id, priority, status, due, created, completed, effort,
 tags, blocked_by, links. Dates are YYYY-MM-DD; an empty value clears
-them. List keys take comma-separated values and support += and -=:
-
-  clask set fix-sync priority=1 due=2026-12-01
+them. List keys take comma-separated values and support += (add) and
+-= (remove).`,
+		Example: `  clask set fix-sync priority=1 due=2026-12-01
   clask set fix-sync tags+=infra tags-=old
-  clask set fix-sync links=https://a,https://b`,
+  clask set fix-sync due=            # clear the due date
+  clask set falcon:app/fix-sync blocked_by=upgrade-cbl`,
 		Args: cobra.MinimumNArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ws, err := loadWorkspace(nil)
@@ -171,6 +178,9 @@ func newEditCmd() *cobra.Command {
 		Long: `Open a task file in your editor. With a task ref the editor jumps to that
 task's block. With --project (or neither) the nearest task file above the
 current directory is opened at the top.`,
+		Example: `  clask edit fix-sync          # jump to the task's block
+  clask edit -p falcon:app     # open a specific task file
+  clask edit                   # nearest task file above the current directory`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 1 {

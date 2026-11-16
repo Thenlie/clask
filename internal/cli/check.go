@@ -25,6 +25,9 @@ func newCheckCmd() *cobra.Command {
 		Long: `Validate task files: structure, unknown keys, bad values, duplicate ids,
 dangling blocked_by references and inconsistent completed dates. Exits 1
 when anything is wrong, so it works as a git hook.`,
+		Example: `  clask check
+  clask check -p .             # only the project you are in
+  clask check --json | jq '.[].message'`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, _, err := loadConfig()

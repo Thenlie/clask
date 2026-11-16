@@ -112,6 +112,12 @@ func newListCmd() *cobra.Command {
 		Short: "List tasks across registered projects",
 		Long: `List open tasks from every registered task file, highest priority first.
 Done and dropped tasks are hidden unless --all or an explicit --status is given.`,
+		Example: `  clask list
+  clask list -p falcon -s blocked
+  clask list -t infra -t sync --sort due
+  clask list --overdue
+  clask list --all -o tsv | tw
+  clask list --json | jq '.tasks[].title'`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd, lf, 0)
@@ -126,7 +132,11 @@ func newNextCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "next",
 		Short: "Show the single highest-priority open task",
-		Args:  cobra.NoArgs,
+		Long: `Print the task "clask list" would show first, using the same filters and
+sort order. Useful in prompts and scripts.`,
+		Example: `  clask next
+  clask next -p .`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd, lf, 1)
 		},

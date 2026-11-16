@@ -30,6 +30,8 @@ func newServeCmd() *cobra.Command {
 		Long: `Start an HTTP server with a browser UI over every registered task file.
 It listens on loopback only; pass --host to change that at your own risk.
 The JSON API lives under /api and mirrors the CLI's --json output.`,
+		Example: `  clask serve
+  clask serve --port 8080 --no-open`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfgPath, err := configPath()

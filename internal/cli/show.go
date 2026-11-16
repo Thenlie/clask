@@ -14,10 +14,12 @@ func newShowCmd() *cobra.Command {
 		Short: "Show one task in full",
 		Long: `Show every field and the markdown body of one task.
 
-A ref is "[project[:scope]/]id". The id may be a unique prefix:
-  clask show fix-sync
+A ref is "[project[:scope]/]id", and the id may be any unique prefix.
+--md prints the task as a frontmatter block plus body, ready for glow.`,
+		Example: `  clask show fix-sync
   clask show falcon/fix-sync-race
-  clask show falcon:app/fix`,
+  clask show falcon:app/fix
+  clask show fix-sync --md | glow -`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ws, err := loadWorkspace(nil)

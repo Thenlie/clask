@@ -28,7 +28,14 @@ func NewRootCmd() *cobra.Command {
 		Use:   "clask",
 		Short: "Cross-repo task lists from TASKS.md files",
 		Long: `clask aggregates TASKS.md files from every registered project on this
-machine into one view. Tasks live in the repo next to the code they describe.`,
+machine into one view. Tasks live in the repo next to the code they describe.
+Running clask with no command is the same as "clask list".
+
+Docs: https://thenlie.github.io/clask/`,
+		Example: `  clask init                      # start a task list in this repo
+  clask add "Fix sync race" -t sync
+  clask                           # everything open, everywhere
+  clask done fix-sync`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
