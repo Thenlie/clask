@@ -30,6 +30,10 @@ go install github.com/Thenlie/clask/cmd/clask@latest   # into $GOBIN or $(go env
 make install        # mise.toml sets GOBIN=~/.local/bin
 ```
 
+`go install` from the module proxy ships without the web UI (`clask serve`
+shows a hint page). From a checkout, `make web install` builds and embeds it;
+that needs node and pnpm, which `mise install` provides.
+
 Shell completion: `clask completion zsh --help` (also bash, fish, powershell).
 
 ## Quick start
@@ -176,6 +180,7 @@ Task commands
 | `clask set <ref> k=v...` | `title`, `id`, `priority`, `status`, `due`, `created`, `completed`, `effort`; lists take `tags=a,b`, `tags+=c`, `tags-=a` (same for `blocked_by`, `links`) |
 | `clask edit [ref]` | open in `$VISUAL`/`$EDITOR` at the task's line (or `-p` for a file) |
 | `clask check` | lint; exit 1 on any issue. Git-hook friendly |
+| `clask serve` | local web UI at http://127.0.0.1:7373 (`--port`, `--no-open`); see [Web UI](#web-ui) |
 
 Registry commands
 
@@ -198,14 +203,44 @@ Global: `--json`, `--no-color` (also honors `NO_COLOR`), `--config`.
 returns issues. Task objects carry `project`, `scope`, `file`, `line` plus
 every task key and `body`.
 
+## Web UI
+
+`clask serve` starts an HTTP server on loopback and opens the browser. The
+page shows every registered file in a sidebar, a filterable table matching
+`clask list`, and a detail pane where you can change status, priority, due,
+effort, tags and title, read the rendered markdown body, and add tasks.
+Changes are written to the task file exactly like the CLI would. The body is
+edited in your editor ("Open in editor" launches GUI editors such as VS Code;
+for terminal editors it shows the `clask edit` command to run).
+
+The page reads from disk on every request, so after editing a file by hand
+just hit Refresh or reload.
+
+The JSON API under `/api` mirrors the CLI: `GET /api/tasks?project=&status=&tag=&priority=&overdue=1&all=1&sort=`
+returns the same shape as `clask list --json`; `GET /api/tasks/<ref>`,
+`POST /api/tasks`, `PATCH /api/tasks/<ref>`, `POST /api/open/<ref>`,
+`GET /api/projects`, `GET /api/check`. Mutations must be same-origin with a
+JSON content type. Binding to anything but loopback exposes your files
+without authentication.
+
 ## Development
 
 ```bash
-mise install          # Go from mise.toml
+mise install          # Go, node and pnpm from mise.toml
 make test             # go vet + go test
-make build            # bin/clask
+make build            # web UI + bin/clask (single binary)
+make build-go         # Go only, skips the frontend build
+```
+
+Frontend dev loop with hot reload:
+
+```bash
+clask serve --no-open   # API on :7373
+make web-dev            # Vite on :5173, proxies /api to the Go server
 ```
 
 Layout follows Go conventions: `cmd/clask` is the entrypoint,
-`internal/core` holds all behavior (the CLI is a thin layer over it, so a
-future `clask serve` can reuse it), `internal/taskfile` is the format.
+`internal/core` holds all behavior, `internal/taskfile` is the format,
+`internal/server` is the HTTP API with the built frontend embedded from
+`internal/server/dist`, and `web/` is the React source. Both the CLI and
+the server are thin layers over `internal/core`.
