@@ -14,7 +14,7 @@ import (
 func run(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 	flags = globalFlags{}
-	root := newRootCmd()
+	root := NewRootCmd()
 	var out bytes.Buffer
 	root.SetOut(&out)
 	root.SetErr(&out)

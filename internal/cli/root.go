@@ -22,7 +22,8 @@ type globalFlags struct {
 
 var flags globalFlags
 
-func newRootCmd() *cobra.Command {
+// NewRootCmd builds the full command tree. Exported for cmd/gendocs.
+func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "clask",
 		Short: "Cross-repo task lists from TASKS.md files",
@@ -94,7 +95,7 @@ func newVersionCmd() *cobra.Command {
 
 // Execute runs the root command and returns a process exit code.
 func Execute() int {
-	root := newRootCmd()
+	root := NewRootCmd()
 	cobra.OnInitialize(func() {
 		if flags.noColor {
 			render.DisableColor()
