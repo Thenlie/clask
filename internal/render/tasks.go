@@ -73,7 +73,27 @@ func TaskTable(w io.Writer, entries []core.Entry, today taskfile.Date) error {
 			e.Title,
 		})
 	}
-	return Table(w, []string{"PROJECT", "ID", "P", "STATUS", "DUE", "TITLE"}, rows)
+	return Table(w, taskColumns(), rows)
+}
+
+// TaskHeaders are the column names shared by the table and delimited formats.
+var TaskHeaders = []string{"project", "id", "priority", "status", "due", "title"}
+
+func taskColumns() []Column {
+	return []Column{{Header: "PROJECT"}, {Header: "ID"}, {Header: "P", Right: true}, {Header: "STATUS"}, {Header: "DUE"}, {Header: "TITLE"}}
+}
+
+// TaskRows renders entries as plain (uncolored) cells for csv/tsv output.
+func TaskRows(entries []core.Entry) [][]string {
+	rows := make([][]string, 0, len(entries))
+	for _, e := range entries {
+		due := ""
+		if e.Due != nil {
+			due = e.Due.String()
+		}
+		rows = append(rows, []string{e.Selector(), e.ID, fmt.Sprint(e.Priority), string(e.Status), due, e.Title})
+	}
+	return rows
 }
 
 // TaskDetail prints one task with every field and its body.

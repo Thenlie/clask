@@ -32,7 +32,7 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		SilenceErrors: true,
 	}
 	// Bare "clask" behaves like "clask list" with default flags.
-	defaultList := &listFlags{sortKey: "priority"}
+	defaultList := &listFlags{sortKey: "priority", format: "table"}
 	root.RunE = func(cmd *cobra.Command, args []string) error {
 		return runList(cmd, defaultList, 0)
 	}

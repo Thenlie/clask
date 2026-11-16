@@ -108,6 +108,18 @@ func TestEndToEnd(t *testing.T) {
 		t.Errorf("show --md output:\n%s", out)
 	}
 
+	out = must(t, "list", "-o", "tsv", "--all")
+	if !strings.HasPrefix(out, "project\tid\tpriority\tstatus\tdue\ttitle\n") || !strings.Contains(out, "demo\tfirst-task\t1\tdone\t") {
+		t.Errorf("tsv output:\n%s", out)
+	}
+	out = must(t, "list", "-o", "jsonl")
+	if strings.Count(out, "\n") != 2 || !strings.HasPrefix(out, `{"project":"demo"`) {
+		t.Errorf("jsonl output:\n%s", out)
+	}
+	if _, err := run(t, "list", "-o", "xml"); err == nil {
+		t.Error("bad format should fail")
+	}
+
 	out = must(t, "next")
 	if strings.Count(out, "\n") != 2 {
 		t.Errorf("next should print one row:\n%s", out)

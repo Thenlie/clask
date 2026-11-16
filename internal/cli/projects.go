@@ -86,15 +86,15 @@ func newProjectsCmd() *cobra.Command {
 				_, err := out.Write([]byte("no projects registered; run \"clask register\" or \"clask scan <dir>\"\n"))
 				return err
 			}
-			var headers []string
+			var headers []render.Column
 			var table [][]string
 			if showFiles {
-				headers = []string{"PROJECT", "SCOPE", "FILE", "WARNINGS"}
+				headers = render.Headers("PROJECT", "SCOPE", "FILE", "WARNINGS")
 				for _, r := range rows {
 					table = append(table, []string{r.Project, r.Scope, r.Path, strings.Join(r.Warnings, "; ")})
 				}
 			} else {
-				headers = []string{"PROJECT", "PATH", "FILES", "WARNINGS"}
+				headers = render.Headers("PROJECT", "PATH", "FILES", "WARNINGS")
 				for _, r := range rows {
 					table = append(table, []string{r.Project, r.Path, strconv.Itoa(r.Files), strings.Join(r.Warnings, "; ")})
 				}

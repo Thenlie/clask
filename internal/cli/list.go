@@ -19,6 +19,7 @@ type listFlags struct {
 	overdue   bool
 	all       bool
 	sortKey   string
+	format    string
 }
 
 func (lf *listFlags) bind(cmd *cobra.Command) {
@@ -31,6 +32,7 @@ func (lf *listFlags) bind(cmd *cobra.Command) {
 	f.BoolVar(&lf.overdue, "overdue", false, "only open tasks past their due date")
 	f.BoolVarP(&lf.all, "all", "a", false, "include done and dropped tasks")
 	f.StringVar(&lf.sortKey, "sort", "priority", "sort by priority, due, created or project")
+	f.StringVarP(&lf.format, "format", "o", "table", "output format: table, tsv, csv, jsonl (or --json)")
 }
 
 func (lf *listFlags) filter() (core.Filter, core.SortKey, error) {
@@ -80,17 +82,27 @@ func runList(cmd *cobra.Command, lf *listFlags, limit int) error {
 		entries = entries[:limit]
 	}
 	out := cmd.OutOrStdout()
+	if entries == nil {
+		entries = []core.Entry{}
+	}
 	if flags.json {
-		if entries == nil {
-			entries = []core.Entry{}
-		}
 		warns := ws.Warnings
 		if warns == nil {
 			warns = []core.Warning{}
 		}
 		return render.JSON(out, listOutput{Tasks: entries, Warnings: warns})
 	}
-	return render.TaskTable(out, entries, fl.Today)
+	switch lf.format {
+	case "table":
+		return render.TaskTable(out, entries, fl.Today)
+	case "tsv":
+		return render.Delimited(out, '\t', render.TaskHeaders, render.TaskRows(entries))
+	case "csv":
+		return render.Delimited(out, ',', render.TaskHeaders, render.TaskRows(entries))
+	case "jsonl":
+		return render.JSONLines(out, entries)
+	}
+	return fmt.Errorf("invalid format %q (want table, tsv, csv or jsonl)", lf.format)
 }
 
 func newListCmd() *cobra.Command {
