@@ -179,6 +179,9 @@ func (ws *Workspace) Entries() []Entry {
 // ErrAmbiguous is wrapped when a reference matches several tasks.
 var ErrAmbiguous = errors.New("ambiguous reference")
 
+// ErrNoTask is wrapped when a reference matches no task.
+var ErrNoTask = errors.New("no task matches")
+
 // Get resolves "[project[:scope]/]id-or-prefix" to exactly one task.
 func (ws *Workspace) Get(ref string) (Entry, error) {
 	sel, idPart, scoped := strings.Cut(ref, "/")
@@ -209,7 +212,7 @@ func (ws *Workspace) Get(ref string) (Entry, error) {
 	}
 	cands := append(exact, prefix...)
 	if len(cands) == 0 {
-		return Entry{}, fmt.Errorf("no task matches %q", ref)
+		return Entry{}, fmt.Errorf("%w %q", ErrNoTask, ref)
 	}
 	refs := make([]string, len(cands))
 	for i, c := range cands {
