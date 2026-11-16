@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Thenlie/clask/internal/render"
+	"github.com/Thenlie/clask/internal/taskfile"
 )
 
 // version is set at build time via -ldflags.
@@ -45,6 +46,14 @@ machine into one view. Tasks live in the repo next to the code they describe.`,
 		newListCmd(),
 		newShowCmd(),
 		newNextCmd(),
+		newAddCmd(),
+		newStatusCmd("start", "Mark tasks in-progress", taskfile.StatusInProgress),
+		newStatusCmd("block", "Mark tasks blocked", taskfile.StatusBlocked),
+		newStatusCmd("done", "Mark tasks done", taskfile.StatusDone),
+		newStatusCmd("drop", "Mark tasks dropped", taskfile.StatusDropped),
+		newStatusCmd("reopen", "Reopen tasks (status todo, clears completed)", taskfile.StatusTodo),
+		newSetCmd(),
+		newEditCmd(),
 		newInitCmd(),
 		newRegisterCmd(),
 		newUnregisterCmd(),
