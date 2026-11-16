@@ -46,6 +46,12 @@ func TestEndToEnd(t *testing.T) {
 	repo := setup(t)
 	must(t, "init", repo, "--name", "demo")
 	must(t, "init", filepath.Join(repo, "packages", "app"))
+	for rel, want := range map[string]string{"TASKS.md": "name: demo\n", "packages/app/TASKS.md": "name: app\n"} {
+		b, _ := os.ReadFile(filepath.Join(repo, rel))
+		if !strings.HasPrefix(string(b), "---\n"+want+"---\n") {
+			t.Errorf("%s header = %q", rel, b)
+		}
+	}
 
 	must(t, "add", "First task", "-p", "demo", "--priority", "1", "-t", "x", "--body", "Body text")
 	must(t, "add", "App task", "-p", "demo:app", "--due", "2020-01-01")

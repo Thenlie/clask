@@ -11,13 +11,16 @@ import (
 	"github.com/Thenlie/clask/internal/registry"
 )
 
-// taskFileTemplate is the content of a freshly created task file: an empty
-// file block followed by a note that the parser ignores.
-const taskFileTemplate = `---
+// taskFileTemplate renders a fresh task file: a file block carrying the
+// scope name, followed by a note that the parser ignores.
+func taskFileTemplate(name string) []byte {
+	return []byte(fmt.Sprintf(`---
+name: %s
 ---
-Tasks for this directory. Add one with: clask add "Title"
+Tasks for %s. Add one with: clask add "Title"
 Format: https://github.com/Thenlie/clask#format
-`
+`, name, name))
+}
 
 func newInitCmd() *cobra.Command {
 	var name string
@@ -50,7 +53,7 @@ project. Use --name to set the scope or project name explicitly.`,
 				return fmt.Errorf("%s already exists; use \"clask register\" or \"clask discover\" to add it", target)
 			}
 
-			var label string
+			var label, scope string
 			if p, _, ok := registry.Context(cfg, abs); ok {
 				root, _ := p.AbsPath()
 				rel, _ := filepath.Rel(root, target)
@@ -58,7 +61,8 @@ project. Use --name to set the scope or project name explicitly.`,
 				if err != nil {
 					return err
 				}
-				label = p.Name + ":" + registry.Scope(*p, *f)
+				scope = registry.Scope(*p, *f)
+				label = p.Name + ":" + scope
 			} else {
 				p, err := registry.Register(cfg, abs, name)
 				if err != nil {
@@ -71,9 +75,10 @@ project. Use --name to set the scope or project name explicitly.`,
 						return err
 					}
 				}
+				scope = p.Name
 				label = p.Name
 			}
-			if err := os.WriteFile(target, []byte(taskFileTemplate), 0o644); err != nil {
+			if err := os.WriteFile(target, taskFileTemplate(scope), 0o644); err != nil {
 				return fmt.Errorf("create %s: %w", target, err)
 			}
 			if err := cfg.Save(cfgPath); err != nil {
