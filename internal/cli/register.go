@@ -17,6 +17,8 @@ func newRegisterCmd() *cobra.Command {
 		Long: `Register the current directory (or PATH) as a project. If the directory is
 inside a git repository the repository root is registered. A TASKS.md at the
 root is added automatically; use "clask init" to create one.`,
+		Example: `  clask register               # the git root containing the current directory
+  clask register ~/code/blog --name blog`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir := "."
@@ -52,6 +54,8 @@ func newUnregisterCmd() *cobra.Command {
 		Short: "Remove a project, or one of its task files, from the registry",
 		Long: `Remove a project ("falcon") or a single task file ("falcon:app") from the
 registry. Files on disk are never modified.`,
+		Example: `  clask unregister blog
+  clask unregister falcon:app`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, path, err := loadConfig()

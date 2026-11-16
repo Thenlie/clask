@@ -22,6 +22,9 @@ directories you name are walked; clask never scans your whole disk.
 
 With --existing only repositories that already contain a task file at
 their root are offered.`,
+		Example: `  clask scan ~/code
+  clask scan ~/code ~/work --depth 2 --existing
+  clask scan ~/code -y`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, cfgPath, err := loadConfig()
@@ -95,7 +98,11 @@ func newPruneCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "prune",
 		Short: "Remove registry entries whose paths no longer exist",
-		Args:  cobra.NoArgs,
+		Long: `Remove projects and task files from the registry when their paths no longer
+exist on disk. Lists what would be removed and asks first unless --yes.`,
+		Example: `  clask prune
+  clask prune -y`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, cfgPath, err := loadConfig()
 			if err != nil {

@@ -31,6 +31,9 @@ func newInitCmd() *cobra.Command {
 registry. Inside a registered project the file becomes a new scope of that
 project; otherwise the directory (or its git root) is registered as a new
 project. Use --name to set the scope or project name explicitly.`,
+		Example: `  clask init                   # new project (or new scope) for the current directory
+  clask init packages/app      # add a scope inside a registered monorepo
+  clask init --name career     # set the name explicitly`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dir := "."

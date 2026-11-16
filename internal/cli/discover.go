@@ -20,6 +20,9 @@ func newDiscoverCmd() *cobra.Command {
 		Long: `Walk a registered project's directory (bounded by --depth, skipping the
 configured ignore list) for task files not yet in the registry, then add
 them. Defaults to the project containing the current directory.`,
+		Example: `  clask discover               # project containing the current directory
+  clask discover falcon --depth 4
+  clask discover falcon -y     # add without asking`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, cfgPath, err := loadConfig()

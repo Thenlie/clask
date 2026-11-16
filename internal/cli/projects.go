@@ -24,7 +24,12 @@ func newProjectsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "projects",
 		Short: "List registered projects",
-		Args:  cobra.NoArgs,
+		Long: `List registered projects with their path, file count and any warnings
+(missing directories or files). With --files, show one row per task file
+with its effective scope label.`,
+		Example: `  clask projects
+  clask projects --files`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, _, err := loadConfig()
 			if err != nil {
